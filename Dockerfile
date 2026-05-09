@@ -1,30 +1,22 @@
-FROM php:8.2-apache
-
-# Cài đặt các thư viện hệ thống cần thiết cho PostgreSQL
+# Cài đặt các thư viện hệ thống cần thiết
 RUN apt-get update && apt-get install -y \
-    libpq-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
     zip \
     unzip \
     git \
-    && docker-php-ext-install pdo pdo_pgsql pgsql
+    curl \
+    libsodium-dev # <--- QUAN TRỌNG: Thư viện cho jwt-auth
 
-# Bật mod_rewrite cho Apache (quan trọng với Laravel)
-RUN a2enmod rewrite
+# Xóa cache apt để giảm dung lượng image
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Cấu hình thư mục làm việc
-WORKDIR /var/www/html
-COPY . .
+# Cài đặt các PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sodium # <--- Thêm sodium ở đây
 
 # Cài đặt Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-RUN composer install --no-dev --optimize-autoloader
 
-# Cấp quyền cho thư mục storage của Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Cấu hình Apache chạy vào thư mục public
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
-
-EXPOSE 80
+# Chạy lệnh cài đặt (Thêm --ignore-platform-reqs để tránh lỗi version PHP)
+RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
