@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth; // Thêm dòng này
 use App\Models\User;
 
 class AuthController extends Controller
@@ -19,38 +19,52 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $credentials = $request->only('email', 'password');
 
-        // Kiểm tra sai email hoặc mật khẩu
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác'], 401);
+        // Sử dụng Auth::guard('api') để PHP Intelisense và Laravel hiểu rõ là dùng JWT
+        $token = Auth::guard('api')->attempt($credentials);
+
+        if (!$token) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Email hoặc mật khẩu không chính xác'
+            ], 401);
         }
 
-        // Kiểm tra tài khoản có bị admin khóa không
+        $user = Auth::guard('api')->user();
+
+        // Kiểm tra trạng thái hoạt động
         if (!$user->is_active) {
-            return response()->json(['success' => false, 'message' => 'Tài khoản của bạn đã bị khóa'], 403);
+            return response()->json([
+                'success' => false, 
+                'message' => 'Tài khoản của bạn đã bị khóa'
+            ], 403);
         }
-
-        // Sinh ra Token bảo mật
-        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
             'message' => 'Đăng nhập thành công',
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user // Trả về thông tin user (kèm role) để Frontend phân luồng giao diện
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
+            ]
         ]);
     }
 
     /**
      * API: POST /api/logout
      */
-    public function logout(Request $request)
+    public function logout()
     {
-        // Xóa token hiện tại của user
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('api')->logout();
         
-        return response()->json(['success' => true, 'message' => 'Đã đăng xuất thành công']);
+        return response()->json([
+            'success' => true, 
+            'message' => 'Đã đăng xuất thành công'
+        ]);
     }
 }
