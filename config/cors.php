@@ -1,27 +1,18 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Here you may configure your settings for cross-origin resource sharing
-    | or "CORS". This determines what cross-origin operations may execute
-    | in web browsers. You are free to adjust these settings as needed.
-    |
-    | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-    |
-    */
-
-    // config/cors.php
-
-    'paths' => ['api/*', 'login', 'logout', 'sanctum/csrf-cookie'],
+    // Đảm bảo đường dẫn login của bạn được bao phủ (thường là api/login)
+    'paths' => ['api/*', 'sanctum/csrf-cookie', 'login', 'logout'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'], // Cho phép tất cả các nguồn truy cập
+    // KHÔNG dùng ['*'] khi supports_credentials là true
+    // Hãy liệt kê chính xác các địa chỉ Frontend của bạn
+    'allowed_origins' => [
+        'http://192.168.1.44:5173', 
+        'http://localhost:5173',
+        'https://dangkhoauni-backend.onrender.com' // Thêm chính nó để tránh lỗi self-call
+    ],
 
     'allowed_origins_patterns' => [],
 
@@ -31,6 +22,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true, // Quan trọng nếu sau này bạn dùng Sanctum/Cookie
-
+    'supports_credentials' => true, // Giữ là true nếu bạn dùng Sanctum/Session
 ];
