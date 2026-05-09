@@ -1,19 +1,18 @@
 <IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /api/
-
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
+
+    RewriteEngine On
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # Redirect Trailing Slashes If Not A Folder...
-    # Sửa lại dòng này để tránh lỗi 404 khi có dấu / ở cuối
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)/$ $1 [L,R=301]
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
