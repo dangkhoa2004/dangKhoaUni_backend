@@ -1,4 +1,5 @@
-# Cài đặt các thư viện hệ thống cần thiết
+FROM php:8.2-fpm
+
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
@@ -7,16 +8,23 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
-    libsodium-dev # <--- QUAN TRỌNG: Thư viện cho jwt-auth
+    libsodium-dev \
+    libzip-dev
 
-# Xóa cache apt để giảm dung lượng image
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Cài đặt các PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sodium # <--- Thêm sodium ở đây
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sodium zip
 
-# Cài đặt Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Chạy lệnh cài đặt (Thêm --ignore-platform-reqs để tránh lỗi version PHP)
+WORKDIR /var/www
+
+COPY . /var/www
+
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
+
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+
+EXPOSE 9000
+
+CMD ["php-fpm"]
