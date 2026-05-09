@@ -9,7 +9,8 @@ return [
     'allowed_origins' => [
         'http://192.168.1.44:5173', 
         'http://localhost:5173',
-        'https://dangkhoauni-backend.onrender.com'
+        'https://dangkhoauni-backend.onrender.com',
+        'https://dang-khoa-uni-frontend.vercel.app'
     ],
 
     'allowed_origins_patterns' => [],
