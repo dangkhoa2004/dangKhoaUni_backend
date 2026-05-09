@@ -9,11 +9,12 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libsodium-dev \
-    libzip-dev
+    libzip-dev \
+    libpq-dev
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd sodium zip
+RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd sodium zip
 
 RUN a2enmod rewrite
 
