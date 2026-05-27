@@ -7,7 +7,8 @@ return [
 
     // Chỉ định rõ IP local của bạn thay vì dùng '*'
     'allowed_origins' => [
-        'http://192.168.1.44:5173', 
+        'http://192.168.1.44:5173',
+        'http://172.16.10.193:5173/',
         'http://localhost:5173',
         'https://dangkhoauni-backend.onrender.com',
         'https://dang-khoa-uni-frontend.vercel.app'
